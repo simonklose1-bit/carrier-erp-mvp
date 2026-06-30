@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth ───────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  OPS
+  SALES
+  DOCS
+  FINANCE
+}
+
+// ─── Vessel ─────────────────────────────────────────────────────────────────
+
+model Vessel {
+  id         String        @id @default(uuid())
+  name       String
+  imo        String        @unique
+  mmsi       String?       @unique
+  flagState  String
+  vesselType VesselType
+  teuCapacity Int
+  status     VesselStatus  @default(ACTIVE)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  voyages    Voyage[]
+
+  @@map("vessels")
+}
+
+enum VesselType {
+  CONTAINER
+  FEEDER
+  RO_RO
+}
+
+enum VesselStatus {
+  ACTIVE
+  IN_MAINTENANCE
+  RETIRED
+}
+
+// ─── Service / Schedule ─────────────────────────────────────────────────────
+
+model Service {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  tradeLane   String
+  portRotation Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  voyages     Voyage[]
+
+  @@map("services")
+}
+
+model Voyage {
+  id           String        @id @default(uuid())
+  voyageNo     String        @unique
+  serviceId    String
+  service      Service       @relation(fields: [serviceId], references: [id])
+  vesselId     String
+  vessel       Vessel        @relation(fields: [vesselId], references: [id])
+  status       VoyageStatus  @default(PLANNED)
+  etd          DateTime
+  eta          DateTime
+  portCalls    Json
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  bookings     Booking[]
+  billsOfLading BillOfLading[]
+
+  @@map("voyages")
+}
+
+enum VoyageStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// ─── Customer ────────────────────────────────────────────────────────────────
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique
+  country   String
+  tier      CustomerTier @default(STANDARD)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings  Booking[]
+
+  @@map("customers")
+}
+
+enum CustomerTier {
+  PREMIUM
+  STANDARD
+  SPOT
+}
+
+// ─── Booking ─────────────────────────────────────────────────────────────────
+
+model Booking {
+  id           String        @id @default(uuid())
+  bookingRef   String        @unique
+  customerId   String
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  voyageId     String
+  voyage       Voyage        @relation(fields: [voyageId], references: [id])
+  pol          String
+  pod          String
+  cargoDesc    String?
+  teu          Int
+  status       BookingStatus @default(PENDING)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  billOfLading BillOfLading?
+
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  ROLLED_OVER
+  CANCELLED
+  COMPLETED
+}
+
+// ─── Bill of Lading ──────────────────────────────────────────────────────────
+
+model BillOfLading {
+  id            String    @id @default(uuid())
+  bookingId     String    @unique
+  booking       Booking   @relation(fields: [bookingId], references: [id])
+  voyageId      String
+  voyage        Voyage    @relation(fields: [voyageId], references: [id])
+  blNumber      String
+  amendmentSeq  Int       @default(0)
+  status        BlStatus  @default(DRAFT)
+  parentBlId    String?
+  parentBl      BillOfLading? @relation("Amendments", fields: [parentBlId], references: [id])
+  amendments    BillOfLading[] @relation("Amendments")
+  vesselName    String
+  voyageNo      String
+  portRotation  Json
+  onBoardDate   DateTime?
+  etaPod        DateTime?
+  issuedAt      DateTime?
+  cancelledAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  amendmentLog  BlAmendmentLog[]
+
+  @@map("bills_of_lading")
+}
+
+enum BlStatus {
+  DRAFT
+  ISSUED
+  SURRENDERED
+  CANCELLED
+  AMENDED
+}
+
+model BlAmendmentLog {
+  id            String   @id @default(uuid())
+  blId          String
+  bl            BillOfLading @relation(fields: [blId], references: [id])
+  triggeredBy   String
+  changedFields Json
+  actor         String
+  createdAt     DateTime @default(now())
+
+  @@map("bl_amendment_logs")
+}
