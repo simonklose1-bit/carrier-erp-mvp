@@ -69,7 +69,7 @@ export class DocumentationService {
         parentBlId: bl.id,
         vesselName: (dto.changedFields["vessel_name"]?.[1]) ?? bl.vesselName,
         voyageNo: (dto.changedFields["voyage_no"]?.[1]) ?? bl.voyageNo,
-        portRotation: bl.portRotation,
+        portRotation: bl.portRotation as string[],
         etaPod: bl.etaPod,
       },
     });
