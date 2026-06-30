@@ -5,7 +5,6 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Carrier ERP",
   description: "Shipping ERP System — Reederei Operations",
-  manifest: "/manifest.json",
 };
 
 const navItems = [
@@ -20,18 +19,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="de">
       <body>
-        {/* Navy Header */}
-        <header className="bg-navy shadow-md sticky top-0 z-50">
+        <header className="bg-erp-navy sticky top-0 z-50 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-yellow rounded-lg flex items-center justify-center">
-                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-navy">
+              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="#0B1F6B">
                   <path d="M20 21H4L2 9h20l-2 12zM12 3L4 9h16L12 3z"/>
                 </svg>
               </div>
               <span className="text-white font-bold text-lg tracking-widest uppercase">
-                Carrier <span className="text-yellow">ERP</span>
+                Carrier <span className="text-accent">ERP</span>
               </span>
             </Link>
 
@@ -51,14 +49,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* User */}
             <div className="flex items-center gap-3">
               <span className="text-white/60 text-sm hidden md:block">Operations</span>
-              <div className="w-8 h-8 rounded-full bg-yellow flex items-center justify-center text-navy font-bold text-sm">
+              <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-erp-navy font-bold text-sm">
                 SK
               </div>
             </div>
           </div>
-
-          {/* Decorative gradient bar */}
-          <div className="h-0.5 bg-gradient-to-r from-navy via-skyblue to-yellow" />
+          {/* Gradient bar */}
+          <div className="h-0.5 bg-gradient-to-r from-erp-navy via-erp-skyblue to-accent" />
         </header>
 
         <main className="max-w-7xl mx-auto px-6 py-8">

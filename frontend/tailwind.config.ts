@@ -9,22 +9,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        navy: {
+        "erp-navy": {
           DEFAULT: "#0B1F6B",
           light: "#1a3080",
           dark: "#07154a",
         },
-        yellow: {
+        "accent": {
           DEFAULT: "#F4E04D",
           dark: "#d4c030",
         },
-        skyblue: "#4F8FE8",
-        success: "#1D9E75",
-        warning: "#BA7517",
-        danger: "#D85A30",
-      },
-      borderRadius: {
-        pill: "24px",
+        "erp-skyblue": "#4F8FE8",
       },
     },
   },

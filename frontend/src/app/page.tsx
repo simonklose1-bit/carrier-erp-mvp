@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 const stats = [
-  { label: "Active Vessels", value: "50", sub: "in fleet", color: "text-navy" },
-  { label: "Open Bookings", value: "124", sub: "this month", color: "text-navy" },
-  { label: "Pending Rollovers", value: "3", sub: "require action", color: "text-warning" },
-  { label: "B/L in Review", value: "8", sub: "awaiting release", color: "text-danger" },
+  { label: "Active Vessels", value: "50", sub: "in fleet", valueColor: "text-erp-navy" },
+  { label: "Open Bookings", value: "124", sub: "this month", valueColor: "text-erp-navy" },
+  { label: "Pending Rollovers", value: "3", sub: "require action", valueColor: "text-amber-600" },
+  { label: "B/L in Review", value: "8", sub: "awaiting release", valueColor: "text-red-500" },
 ];
 
 const recentBookings = [
@@ -42,38 +42,43 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
 
-      {/* Hero bar */}
-      <div className="rounded-2xl overflow-hidden bg-navy relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy to-skyblue opacity-90" />
-        <div className="relative px-8 py-8 flex items-center justify-between">
+      {/* Hero */}
+      <div className="rounded-2xl bg-erp-navy overflow-hidden relative">
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{ background: "linear-gradient(135deg, #0B1F6B 0%, #4F8FE8 100%)" }}
+        />
+        <div className="relative px-8 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <p className="text-white/60 text-sm font-medium uppercase tracking-wider mb-1">Carrier ERP — Operations Center</p>
+            <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-1">
+              Carrier ERP — Operations Center
+            </p>
             <h1 className="text-white text-2xl font-bold">Good morning, Simon</h1>
             <p className="text-white/70 text-sm mt-1">3 rollovers pending · 8 B/Ls in review</p>
           </div>
-          <Link href="/bookings" className="btn-primary">
+          <Link href="/bookings" className="btn-primary self-start sm:self-auto">
             + New Booking
           </Link>
         </div>
-        <div className="h-1 bg-gradient-to-r from-skyblue via-yellow to-yellow/50" />
+        <div className="h-1 bg-gradient-to-r from-erp-skyblue via-accent to-accent/60" />
       </div>
 
-      {/* Stat cards */}
+      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
           <div key={s.label} className="card px-5 py-4">
-            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{s.label}</p>
-            <p className={`text-3xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+            <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">{s.label}</p>
+            <p className={`text-3xl font-bold mt-1 ${s.valueColor}`}>{s.value}</p>
             <p className="text-xs text-gray-400 mt-0.5">{s.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* Recent bookings */}
+      {/* Recent Bookings */}
       <div className="card overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-semibold text-navy text-base">Recent Bookings</h2>
-          <Link href="/bookings" className="text-sm text-skyblue hover:text-navy font-medium transition-colors">
+          <h2 className="font-semibold text-erp-navy text-base">Recent Bookings</h2>
+          <Link href="/bookings" className="text-sm text-erp-skyblue hover:text-erp-navy font-medium transition-colors">
             View all →
           </Link>
         </div>
@@ -81,20 +86,20 @@ export default function DashboardPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ref</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Customer</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">POL → POD</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Vessel</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                {["Ref", "Customer", "POL → POD", "Vessel", "Status"].map((h) => (
+                  <th key={h} className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {recentBookings.map((b) => (
                 <tr key={b.ref} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-3.5 font-mono text-navy font-medium">{b.ref}</td>
+                  <td className="px-6 py-3.5 font-mono text-erp-navy font-semibold text-xs">{b.ref}</td>
                   <td className="px-6 py-3.5 text-gray-700">{b.customer}</td>
-                  <td className="px-6 py-3.5 text-gray-600 font-mono text-xs">{b.pol} → {b.pod}</td>
-                  <td className="px-6 py-3.5 text-gray-600">{b.vessel}</td>
+                  <td className="px-6 py-3.5 text-gray-500 font-mono text-xs">{b.pol} → {b.pod}</td>
+                  <td className="px-6 py-3.5 text-gray-600 text-xs">{b.vessel}</td>
                   <td className="px-6 py-3.5">
                     <span className={statusBadge[b.status]}>{statusLabel[b.status]}</span>
                   </td>
@@ -105,18 +110,20 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Module nav */}
+      {/* Modules */}
       <div>
-        <h2 className="font-semibold text-navy text-base mb-3">Modules</h2>
+        <h2 className="font-semibold text-erp-navy text-base mb-3">Modules</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {modules.map((m) => (
             <Link
               key={m.href}
               href={m.href}
-              className="card px-5 py-4 hover:border-navy/30 hover:shadow-md transition-all group"
+              className="card px-5 py-4 hover:border-erp-navy/20 hover:shadow-md transition-all group"
             >
               <div className="text-2xl mb-2">{m.icon}</div>
-              <h3 className="font-semibold text-navy text-sm group-hover:text-skyblue transition-colors">{m.label}</h3>
+              <h3 className="font-semibold text-erp-navy text-sm group-hover:text-erp-skyblue transition-colors">
+                {m.label}
+              </h3>
               <p className="text-xs text-gray-500 mt-0.5">{m.desc}</p>
             </Link>
           ))}
