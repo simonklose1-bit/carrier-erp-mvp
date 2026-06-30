@@ -9,12 +9,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: "#f0f9ff",
-          500: "#0284c7",
-          600: "#0369a1",
-          900: "#0c4a6e",
+        navy: {
+          DEFAULT: "#0B1F6B",
+          light: "#1a3080",
+          dark: "#07154a",
         },
+        yellow: {
+          DEFAULT: "#F4E04D",
+          dark: "#d4c030",
+        },
+        skyblue: "#4F8FE8",
+        success: "#1D9E75",
+        warning: "#BA7517",
+        danger: "#D85A30",
+      },
+      borderRadius: {
+        pill: "24px",
       },
     },
   },

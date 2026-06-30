@@ -1,3 +1,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  body {
+    font-family: 'Inter', Arial, sans-serif;
+    background-color: #f5f6fa;
+    color: #1a1a2e;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-yellow text-navy font-semibold px-6 py-2.5 rounded-pill hover:bg-yellow-dark transition-colors text-sm;
+  }
+  .btn-secondary {
+    @apply bg-navy text-white font-semibold px-6 py-2.5 rounded-pill hover:bg-navy-light transition-colors text-sm;
+  }
+  .btn-ghost {
+    @apply border border-navy text-navy font-medium px-5 py-2 rounded-pill hover:bg-navy hover:text-white transition-colors text-sm;
+  }
+  .card {
+    @apply bg-white rounded-xl border border-gray-100 shadow-sm;
+  }
+  .badge-confirmed {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success;
+  }
+  .badge-pending {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning/10 text-warning;
+  }
+  .badge-rollover {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow/20 text-navy;
+  }
+  .badge-cancelled {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger/10 text-danger;
+  }
+  .badge-draft {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600;
+  }
+}
