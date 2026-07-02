@@ -53,11 +53,26 @@ export interface Booking {
   createdAt: string;
 }
 
+export interface Voyage {
+  id: string;
+  voyageNo: string;
+  status: string;
+  etd: string;
+  eta: string;
+  portCalls: string[];
+  vessel?: Vessel;
+  service?: { id: string; code: string; name: string; tradeLane: string };
+}
+
 export interface BillOfLading {
   id: string;
   blNumber: string;
   status: "DRAFT" | "ISSUED" | "SURRENDERED" | "CANCELLED" | "AMENDED";
   amendmentSeq: number;
+  vesselName?: string;
+  voyageNo?: string;
+  booking?: { bookingRef: string; pol: string; pod: string };
+  createdAt?: string;
 }
 
 // ─── Fetchers ─────────────────────────────────────────────────────────────────
@@ -69,6 +84,11 @@ export async function fetchVessels() {
 
 export async function fetchBookings() {
   const { data } = await api.get<Paginated<Booking>>("/bookings", { params: { limit: 100 } });
+  return data;
+}
+
+export async function fetchVoyages() {
+  const { data } = await api.get<Paginated<Voyage>>("/schedules/voyages", { params: { limit: 100 } });
   return data;
 }
 
