@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
+import { Providers } from "../lib/providers";
 
 export const metadata: Metadata = {
   title: "Carrier ERP",
@@ -59,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
 
         <main className="max-w-7xl mx-auto px-6 py-8">
-          {children}
+          <Providers>{children}</Providers>
         </main>
       </body>
     </html>

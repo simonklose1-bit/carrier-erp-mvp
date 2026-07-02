@@ -1,25 +1,15 @@
+"use client";
+
 import Link from "next/link";
-
-const stats = [
-  { label: "Active Vessels", value: "50", sub: "in fleet", valueColor: "text-erp-navy" },
-  { label: "Open Bookings", value: "124", sub: "this month", valueColor: "text-erp-navy" },
-  { label: "Pending Rollovers", value: "3", sub: "require action", valueColor: "text-amber-600" },
-  { label: "B/L in Review", value: "8", sub: "awaiting release", valueColor: "text-red-500" },
-];
-
-const recentBookings = [
-  { ref: "BKG-001", customer: "Maersk Line", pol: "DEHAM", pod: "CNSHA", vessel: "MSC Aurora", status: "CONFIRMED" },
-  { ref: "BKG-002", customer: "Hapag-Lloyd", pol: "NLRTM", pod: "SGSIN", vessel: "Ever Given", status: "PENDING" },
-  { ref: "BKG-003", customer: "CMA CGM", pol: "BEANR", pod: "AEJEA", vessel: "CMA Titan", status: "ROLLED_OVER" },
-  { ref: "BKG-004", customer: "COSCO", pol: "DEHAM", pod: "USNYC", vessel: "COSCO Pacific", status: "CONFIRMED" },
-  { ref: "BKG-005", customer: "ONE Line", pol: "GBFXT", pod: "JPYOK", vessel: "ONE Harmony", status: "CANCELLED" },
-];
+import { useQuery } from "@tanstack/react-query";
+import { fetchVessels, fetchBookings, fetchBillsOfLading } from "../lib/api";
 
 const statusBadge: Record<string, string> = {
   CONFIRMED: "badge-confirmed",
   PENDING: "badge-pending",
   ROLLED_OVER: "badge-rollover",
   CANCELLED: "badge-cancelled",
+  COMPLETED: "badge-confirmed",
   DRAFT: "badge-draft",
 };
 
@@ -28,6 +18,7 @@ const statusLabel: Record<string, string> = {
   PENDING: "Pending",
   ROLLED_OVER: "Rolled Over",
   CANCELLED: "Cancelled",
+  COMPLETED: "Completed",
   DRAFT: "Draft",
 };
 
@@ -38,7 +29,53 @@ const modules = [
   { label: "Documentation", href: "/documentation", icon: "📄", desc: "Bill of Lading lifecycle" },
 ];
 
+function StatCard({
+  label,
+  value,
+  sub,
+  valueColor,
+  loading,
+}: {
+  label: string;
+  value: number | string;
+  sub: string;
+  valueColor: string;
+  loading: boolean;
+}) {
+  return (
+    <div className="card px-5 py-4">
+      <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">{label}</p>
+      {loading ? (
+        <div className="h-9 mt-1 flex items-center">
+          <div className="h-6 w-12 bg-gray-100 rounded animate-pulse" />
+        </div>
+      ) : (
+        <p className={`text-3xl font-bold mt-1 ${valueColor}`}>{value}</p>
+      )}
+      <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
+  const vesselsQ = useQuery({ queryKey: ["vessels"], queryFn: fetchVessels });
+  const bookingsQ = useQuery({ queryKey: ["bookings"], queryFn: fetchBookings });
+  const blQ = useQuery({ queryKey: ["bills-of-lading"], queryFn: fetchBillsOfLading });
+
+  const bookings = bookingsQ.data?.data ?? [];
+  const activeVessels = vesselsQ.data?.data.filter((v) => v.status === "ACTIVE").length ?? 0;
+  const openBookings = bookings.filter(
+    (b) => b.status === "PENDING" || b.status === "CONFIRMED",
+  ).length;
+  const pendingRollovers = bookings.filter((b) => b.status === "ROLLED_OVER").length;
+  const blInReview =
+    blQ.data?.data.filter((bl) => bl.status === "DRAFT" || bl.status === "ISSUED").length ?? 0;
+
+  const anyError = vesselsQ.isError || bookingsQ.isError;
+  const recent = [...bookings]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 8);
+
   return (
     <div className="space-y-8">
 
@@ -54,7 +91,10 @@ export default function DashboardPage() {
               Carrier ERP — Operations Center
             </p>
             <h1 className="text-white text-2xl font-bold">Good morning, Simon</h1>
-            <p className="text-white/70 text-sm mt-1">3 rollovers pending · 8 B/Ls in review</p>
+            <p className="text-white/70 text-sm mt-1">
+              {pendingRollovers} rollover{pendingRollovers === 1 ? "" : "s"} pending · {blInReview} B/L
+              {blInReview === 1 ? "" : "s"} in review
+            </p>
           </div>
           <Link href="/bookings" className="btn-primary self-start sm:self-auto">
             + New Booking
@@ -63,15 +103,21 @@ export default function DashboardPage() {
         <div className="h-1 bg-gradient-to-r from-erp-skyblue via-accent to-accent/60" />
       </div>
 
+      {/* Connection error banner */}
+      {anyError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+          <span className="font-semibold">Backend nicht erreichbar.</span> Die API antwortet gerade
+          nicht (Render Free-Tier braucht nach Inaktivität ~30&nbsp;s zum Aufwachen). Lade die Seite
+          in einem Moment neu.
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <div key={s.label} className="card px-5 py-4">
-            <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">{s.label}</p>
-            <p className={`text-3xl font-bold mt-1 ${s.valueColor}`}>{s.value}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{s.sub}</p>
-          </div>
-        ))}
+        <StatCard label="Active Vessels" value={activeVessels} sub="in fleet" valueColor="text-erp-navy" loading={vesselsQ.isLoading} />
+        <StatCard label="Open Bookings" value={openBookings} sub="pending or confirmed" valueColor="text-erp-navy" loading={bookingsQ.isLoading} />
+        <StatCard label="Pending Rollovers" value={pendingRollovers} sub="require action" valueColor="text-amber-600" loading={bookingsQ.isLoading} />
+        <StatCard label="B/L in Review" value={blInReview} sub="awaiting release" valueColor="text-red-500" loading={blQ.isLoading} />
       </div>
 
       {/* Recent Bookings */}
@@ -94,14 +140,30 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {recentBookings.map((b) => (
-                <tr key={b.ref} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-3.5 font-mono text-erp-navy font-semibold text-xs">{b.ref}</td>
-                  <td className="px-6 py-3.5 text-gray-700">{b.customer}</td>
+              {bookingsQ.isLoading && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-400 text-sm">
+                    Loading bookings…
+                  </td>
+                </tr>
+              )}
+              {!bookingsQ.isLoading && recent.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-400 text-sm">
+                    No bookings yet.
+                  </td>
+                </tr>
+              )}
+              {recent.map((b) => (
+                <tr key={b.id} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="px-6 py-3.5 font-mono text-erp-navy font-semibold text-xs">{b.bookingRef}</td>
+                  <td className="px-6 py-3.5 text-gray-700">{b.customer?.name ?? "—"}</td>
                   <td className="px-6 py-3.5 text-gray-500 font-mono text-xs">{b.pol} → {b.pod}</td>
-                  <td className="px-6 py-3.5 text-gray-600 text-xs">{b.vessel}</td>
+                  <td className="px-6 py-3.5 text-gray-600 text-xs">{b.voyage?.vessel?.name ?? "—"}</td>
                   <td className="px-6 py-3.5">
-                    <span className={statusBadge[b.status]}>{statusLabel[b.status]}</span>
+                    <span className={statusBadge[b.status] ?? "badge-draft"}>
+                      {statusLabel[b.status] ?? b.status}
+                    </span>
                   </td>
                 </tr>
               ))}
